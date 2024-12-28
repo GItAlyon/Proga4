@@ -1,4 +1,4 @@
-﻿// Classi_2proga.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+// Classi_2proga.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
 #define _CRT_SECURE_NO_WARNINGS
 /*#include <windows.h>
@@ -147,22 +147,30 @@ private:
 public:
     Game() {
         residentCount = 0; // Инициализация статического поля
-        initializeResidents(residents);
+        try {
+            initializeResidents(residents);
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Ошибка: " << e.what() << std::endl; // Обработка исключения
+            exit(1);
+        }
     }
 
     static void initializeResidents(Resident* residents) { // Статический метод
         std::ifstream file(FILENAME);
         if (!file) {
-            std::cerr << "Не удалось открыть файл жильцов.\n";
-            return;
+            throw std::runtime_error("Не удалось открыть файл жильцов."); // Генерация исключения
+            exit(1);
         }
 
-        while (file) {
+        while (true) {
             std::string first, last, id, hair, cloth, phone;
-            if (file >> first >> last >> id >> hair >> cloth >> phone) {
-                residents[residentCount].setResident(first, last, id, hair, cloth, phone);
-                residentCount++;
+            if (!(file >> first >> last >> id >> hair >> cloth >> phone)) {
+                if (file.eof()) break; // Достигнут конец файла
+                throw std::runtime_error("Ошибка чтения данных из файла.");
+                exit(1);
             }
+            residents[residentCount].setResident(first, last, id, hair, cloth, phone);
+            residentCount++;
         }
         if (residentCount == 0) {
             std::cout << "Ой. Похоже, что в этом доме ещё никто не живёт!\n";
